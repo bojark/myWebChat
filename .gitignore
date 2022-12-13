@@ -1,0 +1,12 @@
+.idea/
+target/
+src/test/
+
+# Separate Files
+techTask.md
+projectPlot.md
+message.json
+
+# Images
+*.png
+*.psd
