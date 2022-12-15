@@ -1,19 +1,25 @@
 package ru.bojark.web_chat.utilities;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class Message {
-    private final String date;
-    private final String sender;
-    private final String messageText;
+    public String date;
+    public String sender;
+    public String messageText;
     private Boolean isExit = false;
 
-    private Message(@JsonProperty("date") String date,
-                   @JsonProperty("sender") String sender,
-                   @JsonProperty("messageText") String messageText) {
+    public Message(){
+
+    }
+
+    public Message(String date, String sender, String messageText) {
 
         this.date = date;
         this.sender = sender;
@@ -54,4 +60,23 @@ public class Message {
     public Boolean isExit(){
         return isExit;
     }
+
+    public static Message fromJSON(String jsonString){
+        JSONObject jsonObject;
+        try {
+            jsonObject = (JSONObject) new JSONParser().parse(jsonString);
+        } catch (ParseException e) {
+            return new Message("Error", "Неправильный формат сообщения.");
+        }
+        Gson gson = new GsonBuilder().create();
+
+      return gson.fromJson(jsonObject.toString(), Message.class);
+
+    }
+
+    public String toJSON(){
+        Gson gson = new Gson();
+       return gson.toJson(this);
+    }
+
 }
