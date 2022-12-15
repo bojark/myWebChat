@@ -1,7 +1,7 @@
 package ru.bojark.web_chat.utilities;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -15,7 +15,7 @@ public class Message {
     public String messageText;
     private Boolean isExit = false;
 
-    public Message(){
+    public Message() {
 
     }
 
@@ -26,7 +26,7 @@ public class Message {
         this.messageText = messageText;
     }
 
-    public Message(String sender, String messageText){
+    public Message(String sender, String messageText) {
         this(currentTime(), sender, messageText);
     }
 
@@ -42,26 +42,26 @@ public class Message {
         return messageText;
     }
 
-    public String toString(){
-        return date + " " + sender + ": " + messageText + "\n";
+    public String toString() {
+        return date + " " + sender + ": " + messageText;
     }
 
-    public static String currentTime(){
+    public static String currentTime() {
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         return formatter.format(calendar.getTime());
     }
 
-    public Message exit(){
+    public Message exit() {
         this.isExit = true;
         return this;
     }
 
-    public Boolean isExit(){
+    public Boolean isExit() {
         return isExit;
     }
 
-    public static Message fromJSON(String jsonString){
+    public static Message fromJSON(String jsonString) {
         JSONObject jsonObject;
         try {
             jsonObject = (JSONObject) new JSONParser().parse(jsonString);
@@ -70,13 +70,13 @@ public class Message {
         }
         Gson gson = new GsonBuilder().create();
 
-      return gson.fromJson(jsonObject.toString(), Message.class);
+        return gson.fromJson(jsonObject.toString(), Message.class);
 
     }
 
-    public String toJSON(){
+    public String toJSON() {
         Gson gson = new Gson();
-       return gson.toJson(this);
+        return gson.toJson(this);
     }
 
 }

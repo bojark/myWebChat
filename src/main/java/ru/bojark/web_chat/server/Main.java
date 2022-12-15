@@ -6,7 +6,11 @@ import ru.bojark.web_chat.utilities.SettingsParser;
 public class Main {
 
     public static void main(String[] args) {
-        Message message = new Message("тест", "тестовое сообщение");
+        System.out.println(new Message("Test", "Тестовое сообщение").toJSON());
+        SettingsParser sp = new SettingsParser("settings_server.txt");
+        Server server = new Server(sp.parsePort(), sp.parseUserName(), sp.parseLogPath());
+        server.start();
+
     }
 
 }

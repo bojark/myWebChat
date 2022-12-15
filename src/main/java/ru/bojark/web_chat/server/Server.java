@@ -34,17 +34,19 @@ public class Server {
             while (true) {
                 Socket clientSocket = serverSocket.accept();
                 new Thread(() -> {
-                    try(PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-                        BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))){
+                    try (PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+                         BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
                         Message message_in = Message.fromJSON(in.readLine());
                         printMessage(message_in);
                         out.println(message_in.toJSON());
                         out.flush();
 
-                    } catch (IOException e){
+                    } catch (IOException e) {
                         printMessage(new Message(NAME, Strings.SERVER_FAILED_TO_CONNECT.toString()));
                     } finally {
-                        try {clientSocket.close();} catch (IOException e) {
+                        try {
+                            clientSocket.close();
+                        } catch (IOException e) {
                             printMessage(new Message("Error", Strings.SERVER_FAILED_TO_CLOSE_CONNECTION.toString()));
                         }
                     }
