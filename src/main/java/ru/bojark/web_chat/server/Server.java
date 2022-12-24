@@ -10,17 +10,14 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Server {
 
-    private final String PORT;
+    private final int PORT;
     private final String NAME;
     private final Logger LOGGER;
-    private List<Socket> socketList = new ArrayList<>();
 
-    public Server(String port, String name, String loggerPath) {
+    public Server(int port, String name, String loggerPath) {
 
         this.PORT = port;
         this.NAME = name;
@@ -29,28 +26,36 @@ public class Server {
 
     public void start() {
         printMessage(new Message(NAME, Strings.SERVER_IS_STARTING.toString()));
-        try (ServerSocket serverSocket = new ServerSocket(Integer.parseInt(PORT))) {
+        try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             printMessage(new Message(NAME, Strings.SERVER_IS_ON.toString()));
             while (true) {
-                Socket clientSocket = serverSocket.accept();
-                new Thread(() -> {
-                    try (PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-                         BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
-                        Message message_in = Message.fromJSON(in.readLine());
-                        printMessage(message_in);
-                        out.println(message_in.toJSON());
-                        out.flush();
+                try{
+                    Socket clientSocket = serverSocket.accept();
+                    printMessage(new Message(NAME, Strings.SERVER_NEW_CONNECTION.toString()));
+                    new Thread(() -> {
+                        try (PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+                             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
+                            String incoming = in.readLine();
+                            System.out.println(incoming);
+                            Message message_in = Message.fromJSON(incoming);
+                            printMessage(message_in);
+                            out.println(message_in.toJSON());
+                            out.flush();
 
-                    } catch (IOException e) {
-                        printMessage(new Message(NAME, Strings.SERVER_FAILED_TO_CONNECT.toString()));
-                    } finally {
-                        try {
-                            clientSocket.close();
                         } catch (IOException e) {
-                            printMessage(new Message("Error", Strings.SERVER_FAILED_TO_CLOSE_CONNECTION.toString()));
+                            printMessage(new Message(NAME, Strings.SERVER_FAILED_TO_CONNECT.toString()));
+                        } finally {
+                            try {
+                                clientSocket.close();
+                            } catch (IOException e) {
+                                printMessage(new Message("Error", Strings.SERVER_FAILED_TO_CLOSE_CONNECTION.toString()));
+                            }
                         }
-                    }
-                });
+                    }).start();
+
+                }catch (IOException e){
+                    printMessage(new Message("Error", Strings.SERVER_FAILED_TO_ACCEPT_CONNECTION.toString()));
+                }
             }
         } catch (IOException e) {
             printMessage(new Message("Error", Strings.SERVER_STARTING_ER.toString()));

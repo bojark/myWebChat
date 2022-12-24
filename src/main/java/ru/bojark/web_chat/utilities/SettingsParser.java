@@ -64,8 +64,12 @@ public class SettingsParser implements SettingsParserBlueprint {
     }
 
     @Override
-    public String parsePort() {
-        return parseSetting("port", DEFPORT);
+    public int parsePort() {
+        try {
+            return Integer.parseInt(parseSetting("port", DEFPORT));
+        } catch (Exception e){
+            return 8000;
+        }
     }
 
     @Override

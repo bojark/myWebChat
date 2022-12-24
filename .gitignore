@@ -8,3 +8,8 @@ message.json
 
 # Images
 *.psd
+
+# files
+log_server.txt
+projectPlot.md
+

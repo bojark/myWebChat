@@ -8,6 +8,9 @@
 * Client
 * Потом: юнит-тесты
 
+**Образец сообщения в JSON-формате для тестов**
+{"date":"24-12-2022 13:49:56","sender":"Test","messageText":"Тестовое сообщение","isExit":false}
+
 Схема приложения:
 
 ![][scheme]
@@ -16,3 +19,4 @@
 
 [scheme]: projectScheme.png
 [concept]: projectPlot.md
+
