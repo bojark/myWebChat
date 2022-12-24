@@ -7,7 +7,9 @@ public enum Strings {
         SERVER_FAILED_TO_CONNECT("Ошибка подключения к серверу."),
         SERVER_FAILED_TO_CLOSE_CONNECTION("Ошибка при закрытии клиентского сокета."),
         SERVER_FAILED_TO_ACCEPT_CONNECTION("Ошибка при октрытии подключения со стороны сервера."),
-        SERVER_NEW_CONNECTION("Новое подключение.");
+        SERVER_NEW_CONNECTION("Новое подключение."),
+        SENDER_EXIT("Пользователь покинул чат."),
+        SERVER_CONFIRMS("Сообщение получено.");
         private String text;
         Strings(String text) {
             this.text = text;

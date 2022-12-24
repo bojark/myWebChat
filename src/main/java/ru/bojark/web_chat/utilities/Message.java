@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import ru.bojark.web_chat.utilities.misc.Strings;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -13,33 +14,27 @@ public class Message {
     public String date;
     public String sender;
     public String messageText;
-    private Boolean isExit = false;
+    private final Boolean isExit;
 
-    public Message() {
 
-    }
-
-    public Message(String date, String sender, String messageText) {
+    public Message(String date, String sender, String messageText, Boolean isExit) {
 
         this.date = date;
         this.sender = sender;
         this.messageText = messageText;
+        this.isExit = isExit;
     }
 
     public Message(String sender, String messageText) {
-        this(currentTime(), sender, messageText);
+        this(sender, messageText, false);
     }
 
-    public String getDate() {
-        return date;
+    public Message(String sender, String messageText, Boolean isExit) {
+        this(currentTime(), sender, messageText, isExit);
     }
 
     public String getSender() {
         return sender;
-    }
-
-    public String getMessengeText() {
-        return messageText;
     }
 
     public String toString() {
@@ -52,11 +47,6 @@ public class Message {
         return formatter.format(calendar.getTime());
     }
 
-    public Message exit() {
-        this.isExit = true;
-        return this;
-    }
-
     public Boolean isExit() {
         return isExit;
     }
@@ -66,7 +56,7 @@ public class Message {
         try {
             jsonObject = (JSONObject) new JSONParser().parse(jsonString);
         } catch (ParseException e) {
-            return new Message("Error", "Неправильный формат сообщения.");
+            return new Message("Error", Strings.MESSAGE_ERROR.toString());
         }
         Gson gson = new GsonBuilder().create();
 

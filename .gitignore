@@ -11,5 +11,8 @@ message.json
 
 # files
 log_server.txt
+log_user1.txt
+log_user2.txt
+log.txt
 projectPlot.md
 

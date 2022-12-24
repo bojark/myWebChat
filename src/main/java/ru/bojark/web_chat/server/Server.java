@@ -25,48 +25,44 @@ public class Server {
     }
 
     public void start() {
-        printMessage(new Message(NAME, Strings.SERVER_IS_STARTING.toString()));
+        LOGGER.printMessage(new Message(NAME, Strings.SERVER_IS_STARTING.toString()));
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
-            printMessage(new Message(NAME, Strings.SERVER_IS_ON.toString()));
+            LOGGER.printMessage(new Message(NAME, Strings.SERVER_IS_ON.toString()));
             while (true) {
                 try{
                     Socket clientSocket = serverSocket.accept();
-                    printMessage(new Message(NAME, Strings.SERVER_NEW_CONNECTION.toString()));
+                    //LOGGER.printMessage(new Message(NAME, Strings.SERVER_NEW_CONNECTION.toString()));
                     new Thread(() -> {
                         try (PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
                              BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
-                            String incoming = in.readLine();
-                            System.out.println(incoming);
-                            Message message_in = Message.fromJSON(incoming);
-                            printMessage(message_in);
-                            out.println(message_in.toJSON());
+                            Message message_in = Message.fromJSON(in.readLine());
+                            if(message_in.isExit()){
+                                LOGGER.printMessage(new Message(message_in.getSender(), Strings.SENDER_EXIT.toString()));
+                            } else {LOGGER.printMessage(message_in);}
+
+                            out.println(new Message(NAME, Strings.SERVER_CONFIRMS.toString()).toJSON());
                             out.flush();
 
                         } catch (IOException e) {
-                            printMessage(new Message(NAME, Strings.SERVER_FAILED_TO_CONNECT.toString()));
+                            LOGGER.printMessage(new Message(NAME, Strings.SERVER_FAILED_TO_CONNECT.toString()));
                         } finally {
                             try {
                                 clientSocket.close();
                             } catch (IOException e) {
-                                printMessage(new Message("Error", Strings.SERVER_FAILED_TO_CLOSE_CONNECTION.toString()));
+                                LOGGER.printMessage(new Message("Error", Strings.SERVER_FAILED_TO_CLOSE_CONNECTION.toString()));
                             }
                         }
                     }).start();
 
                 }catch (IOException e){
-                    printMessage(new Message("Error", Strings.SERVER_FAILED_TO_ACCEPT_CONNECTION.toString()));
+                    LOGGER.printMessage(new Message("Error", Strings.SERVER_FAILED_TO_ACCEPT_CONNECTION.toString()));
                 }
             }
         } catch (IOException e) {
-            printMessage(new Message("Error", Strings.SERVER_STARTING_ER.toString()));
+            LOGGER.printMessage(new Message("Error", Strings.SERVER_STARTING_ER.toString()));
         }
 
     }
 
-    private void printMessage(Message message) {
-        System.out.println(message);
-        LOGGER.log(message);
-
-    }
 
 }

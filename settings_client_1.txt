@@ -1,0 +1,4 @@
+port:8090
+host:127.0.0.1
+name-default:User1
+logpath:log_user1.txt

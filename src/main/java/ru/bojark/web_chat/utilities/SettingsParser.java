@@ -2,6 +2,7 @@ package ru.bojark.web_chat.utilities;
 
 import ru.bojark.web_chat.utilities.blueprints.SettingsParserBlueprint;
 import ru.bojark.web_chat.utilities.misc.SetParams;
+import ru.bojark.web_chat.utilities.misc.Strings;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -15,9 +16,6 @@ public class SettingsParser implements SettingsParserBlueprint {
     private final String DEFNAME;
     private final String DEFLOGPATH;
 
-    public SettingsParser(){
-        this(SetParams.DEFPATH.toString());
-    }
     public SettingsParser(String settingsPath){
 
         this(settingsPath,
@@ -37,7 +35,6 @@ public class SettingsParser implements SettingsParserBlueprint {
         settings = new ArrayList<>();
         try {
             BufferedReader reader = new BufferedReader(new FileReader(settingsPath));
-            // считаем сначала первую строку
             String line = reader.readLine();
             settings.add(line);
             while (line != null) {
@@ -45,7 +42,7 @@ public class SettingsParser implements SettingsParserBlueprint {
                 settings.add(line);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(new Message("Settings Parser", Strings.PARSER_ERROR.toString()));
         }
 
 
