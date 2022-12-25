@@ -9,9 +9,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         Client client = Client.build(SETTINGS_PATH);
-        Client client2 = Client.build(SETTINGS_PATH2);
         client.start();
-        client2.start();
     }
 
 
