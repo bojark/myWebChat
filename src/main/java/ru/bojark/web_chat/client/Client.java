@@ -17,6 +17,7 @@ public class Client {
     private final String HOST;
     private boolean isExit = false;
     private final Logger LOGGER;
+    private Socket clientSocket;
 
 
     private Client(String username, int port, String host, String logPath) {
@@ -24,30 +25,61 @@ public class Client {
         this.PORT = port;
         this.username = username;
         this.LOGGER = new Logger(logPath);
+
     }
 
-    public static Client build(String settingsPath) {
-            SettingsParser sp = new SettingsParser(settingsPath);
-            return new Client(sp.parseUserName(), sp.parsePort(), sp.parseHost(), sp.parseLogPath());
+    public static Client build(String settingsPath) throws IOException {
+        SettingsParser sp = new SettingsParser(settingsPath);
+        return new Client(sp.parseUserName(), sp.parsePort(), sp.parseHost(), sp.parseLogPath());
     }
 
-    private void setUsername(String username){
+    public Boolean connect(){
+        try {
+            clientSocket = new Socket(HOST, PORT);
+            return true;
+        } catch (IOException e) {
+            LOGGER.printMessage(new Message("ERROR", Strings.SERVER_IS_NOT_RUNNING_ERROR.toString()));
+            return false;
+        }
+    }
+
+    private void setUsername(String username) {
         this.username = username;
     }
 
     public void start() throws IOException {
-        new Thread(() -> {
+        if(connect()){
             LOGGER.printMessage(new Message(username, Strings.CLIENT_RUNS.toString()));
-            while(!isExit){
+            userListner();
+            serverListner();
+        }
+    }
+
+    private void serverListner() {
+
+        new Thread(() -> {
+            while (isExit) {
+                try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
+                    LOGGER.printMessage(Message.fromJSON(in.readLine()));
+                } catch(IOException e) {
+                    LOGGER.printMessage(new Message("ERROR", Strings.SERVER_RECEIVE_MESSAGE_ERROR.toString()));
+                }
+            }
+        }).start();
+    }
+
+    private void userListner() {
+        new Thread(() -> {
+            while (!isExit) {
                 System.out.print(Strings.CLIENT_INPUT_MESSAGE);
                 BufferedReader reader = new BufferedReader(
                         new InputStreamReader(System.in));
                 try {
                     String input = reader.readLine();
-                    if(input.equals("/exit")){
+                    if (input.equals("/exit")) {
                         isExit = true;
                     } else {
-                        Message message = new Message(username,input);
+                        Message message = new Message(username, input);
                         send(message);
                     }
                 } catch (IOException e) {
@@ -59,24 +91,20 @@ public class Client {
             LOGGER.log(closeMessage);
 
         }).start();
-
     }
 
-    private void send(Message message){
-        try (Socket clientSocket = new Socket(HOST, PORT);
-             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))
+    private void send(Message message) {
+        try (
+                PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)
         ) {
             out.println(message.toJSON());
             out.flush();
-            LOGGER.printMessage(Message.fromJSON(in.readLine()));
 
         } catch (IOException e) {
-            LOGGER.printMessage(new Message("ERROR", Strings.CLIENT_SEND_ERROR.toString()));
+            e.printStackTrace();
+//            LOGGER.printMessage(new Message("ERROR", Strings.CLIENT_SEND_ERROR.toString()));
         }
     }
-
-
 
 
 }
