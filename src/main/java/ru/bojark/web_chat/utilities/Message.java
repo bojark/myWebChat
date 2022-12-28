@@ -29,6 +29,10 @@ public class Message {
         this(sender, messageText, false);
     }
 
+    public Message(String sender, Boolean isExit) {
+        this(sender, "", isExit);
+    }
+
     public Message(String sender, String messageText, Boolean isExit) {
         this(currentTime(), sender, messageText, isExit);
     }

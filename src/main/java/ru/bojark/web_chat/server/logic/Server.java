@@ -1,8 +1,9 @@
-package ru.bojark.web_chat.server;
+package ru.bojark.web_chat.server.logic;
 
 import ru.bojark.web_chat.server.misc.Strings;
 import ru.bojark.web_chat.utilities.Logger;
 import ru.bojark.web_chat.utilities.Message;
+import ru.bojark.web_chat.utilities.SettingsParser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,12 +22,17 @@ public class Server {
     private final Set<Socket> clientSet;
 
 
-    public Server(int port, String name, String loggerPath) {
+    private Server(int port, String name, String loggerPath) {
 
         this.PORT = port;
         this.NAME = name;
         this.LOGGER = new Logger(loggerPath);
         clientSet = new CopyOnWriteArraySet<>();
+    }
+
+    public static Server buildFormSettings(String settingsPath){
+        SettingsParser sp = new SettingsParser(settingsPath);
+        return new Server(sp.parsePort(), sp.parseUserName(), sp.parseLogPath());
     }
 
     public void start() {

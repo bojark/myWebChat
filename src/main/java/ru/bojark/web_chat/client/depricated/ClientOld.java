@@ -1,4 +1,4 @@
-package ru.bojark.web_chat.client;
+package ru.bojark.web_chat.client.depricated;
 
 import ru.bojark.web_chat.client.misc.Strings;
 import ru.bojark.web_chat.utilities.Logger;
@@ -11,7 +11,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-public class Client {
+public class ClientOld {
     private String username;
     private final int PORT;
     private final String HOST;
@@ -20,7 +20,7 @@ public class Client {
     private Socket clientSocket;
 
 
-    private Client(String username, int port, String host, String logPath) {
+    private ClientOld(String username, int port, String host, String logPath) {
         this.HOST = host;
         this.PORT = port;
         this.username = username;
@@ -28,9 +28,9 @@ public class Client {
 
     }
 
-    public static Client build(String settingsPath) throws IOException {
+    public static ClientOld build(String settingsPath) throws IOException {
         SettingsParser sp = new SettingsParser(settingsPath);
-        return new Client(sp.parseUserName(), sp.parsePort(), sp.parseHost(), sp.parseLogPath());
+        return new ClientOld(sp.parseUserName(), sp.parsePort(), sp.parseHost(), sp.parseLogPath());
     }
 
     public Boolean connect(){
@@ -58,11 +58,14 @@ public class Client {
     private void serverListner() {
 
         new Thread(() -> {
-            while (isExit) {
+            while (!isExit) {
                 try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
-                    LOGGER.printMessage(Message.fromJSON(in.readLine()));
+                    if(in.ready()){
+                        LOGGER.printMessage(Message.fromJSON(in.readLine()));
+                    }
                 } catch(IOException e) {
-                    LOGGER.printMessage(new Message("ERROR", Strings.SERVER_RECEIVE_MESSAGE_ERROR.toString()));
+                    e.printStackTrace();
+//                    LOGGER.printMessage(new Message("ERROR", Strings.SERVER_RECEIVE_MESSAGE_ERROR.toString()));
                 }
             }
         }).start();
