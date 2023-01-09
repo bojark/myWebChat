@@ -4,7 +4,7 @@ import ru.bojark.web_chat.client.logic.Client;
 
 import java.io.IOException;
 
-public class SecondClient {
+public class Client2 {
 
     private static final String SETTINGS_PATH = "settings_client_2.txt";
 

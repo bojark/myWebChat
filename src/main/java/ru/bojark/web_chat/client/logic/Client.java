@@ -27,6 +27,10 @@ public class Client {
     private PrintWriter outMes;
     private Scanner console;
 
+    public String getUsername() {
+        return username;
+    }
+
     private Client(String username, int port, String host, String logPath) {
         this.username = username;
         PORT = port;
@@ -40,7 +44,7 @@ public class Client {
     }
 
     public void start() throws IOException {
-        if(connect()){
+        if (connect()) {
             outMes = new PrintWriter(clientSocket.getOutputStream(), true);
             inMes = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             console = new Scanner(System.in);
@@ -79,7 +83,6 @@ public class Client {
     public void userListener() {
         new Thread(() -> {
             while (true) {
-                System.out.print(Strings.CLIENT_INPUT_MESSAGE);
                 if (console.hasNext()) {
                     String input = console.nextLine();
                     if (input.equalsIgnoreCase(Strings.CLIENT_EXIT_COMMAND.toString())) {
@@ -98,7 +101,14 @@ public class Client {
 
     public void chooseUserName() {
         System.out.print(Strings.CLIENT_SETNAME_MESSAGE);
-        setName(console.nextLine());
+        String input = console.nextLine();
+        if (!input.equals(Strings.CLIENT_DEF_NAME_COMMAND.toString())) {
+            setName(input);
+        } else {
+            LOGGER.printMessage(new Message(getUsername(), Strings.CLIENT_DEF_NAME.toString()));
+        }
+
+
     }
 
     private void setName(String name) {
@@ -106,7 +116,7 @@ public class Client {
         this.username = name;
     }
 
-    private Boolean connect(){
+    private Boolean connect() {
         try {
             clientSocket = new Socket(HOST, PORT);
             return true;
