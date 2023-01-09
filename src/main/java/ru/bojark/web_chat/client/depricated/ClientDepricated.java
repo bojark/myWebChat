@@ -11,7 +11,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-public class ClientOld {
+public class ClientDepricated {
     private String username;
     private final int PORT;
     private final String HOST;
@@ -20,7 +20,7 @@ public class ClientOld {
     private Socket clientSocket;
 
 
-    private ClientOld(String username, int port, String host, String logPath) {
+    private ClientDepricated(String username, int port, String host, String logPath) {
         this.HOST = host;
         this.PORT = port;
         this.username = username;
@@ -28,9 +28,9 @@ public class ClientOld {
 
     }
 
-    public static ClientOld build(String settingsPath) throws IOException {
+    public static ClientDepricated build(String settingsPath) throws IOException {
         SettingsParser sp = new SettingsParser(settingsPath);
-        return new ClientOld(sp.parseUserName(), sp.parsePort(), sp.parseHost(), sp.parseLogPath());
+        return new ClientDepricated(sp.parseUserName(), sp.parsePort(), sp.parseHost(), sp.parseLogPath());
     }
 
     public Boolean connect(){

@@ -1,89 +1,93 @@
 package ru.bojark.web_chat.server.logic;
 
+import ru.bojark.web_chat.server.depricated.ServerDepricated;
 import ru.bojark.web_chat.server.misc.Strings;
 import ru.bojark.web_chat.utilities.Logger;
 import ru.bojark.web_chat.utilities.Message;
 import ru.bojark.web_chat.utilities.SettingsParser;
+import ru.bojark.web_chat.utilities.misc.User;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
 
 public class Server {
 
     private final int PORT;
     private final String NAME;
     private final Logger LOGGER;
-    private final Set<Socket> clientSet;
 
+    private static Map<Integer, User> users;
 
-    private Server(int port, String name, String loggerPath) {
+    private Server(int port, String name, String loggerPath){
 
         this.PORT = port;
         this.NAME = name;
         this.LOGGER = new Logger(loggerPath);
-        clientSet = new CopyOnWriteArraySet<>();
+        users = new HashMap<>();
     }
-
-    public static Server buildFormSettings(String settingsPath){
+    public static Server buildFromSettings(String settingsPath){
         SettingsParser sp = new SettingsParser(settingsPath);
         return new Server(sp.parsePort(), sp.parseUserName(), sp.parseLogPath());
     }
 
-    public void start() {
-        LOGGER.printMessage(new Message(NAME, Strings.SERVER_IS_STARTING.toString()));
-        try (ServerSocket serverSocket = new ServerSocket(PORT)) {
-            LOGGER.printMessage(new Message(NAME, Strings.SERVER_IS_ON.toString()));
-            while (true) {
-                try {
-                    Socket clientSocket = serverSocket.accept();
-                    clientSet.add(clientSocket);
-                    //LOGGER.printMessage(new Message(NAME, Strings.SERVER_NEW_CONNECTION.toString()));
-                    new Thread(() -> {
-                        try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
-                            Message message_in = Message.fromJSON(in.readLine());
-                            if (message_in.isExit()) {
-                                LOGGER.printMessage(new Message(message_in.getSender(), Strings.SENDER_EXIT.toString()));
-                                clientSet.removeIf((x) -> x.equals(clientSocket));
-                                try {
-                                    clientSocket.close();
-                                } catch (IOException e) {
-                                    LOGGER.printMessage(new Message("Error", Strings.SERVER_FAILED_TO_CLOSE_CONNECTION.toString()));
-                                }
-                            } else {
-                                LOGGER.printMessage(message_in);
-                            }
-
-                            for (Socket client : clientSet
-                            ) {
-                                try (PrintWriter out = new PrintWriter(client.getOutputStream(), true)) {
-                                    out.println(new Message(NAME, Strings.SERVER_CONFIRMS.toString()).toJSON());
-                                    out.flush();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-
-
-                        } catch (IOException e) {
-                            LOGGER.printMessage(new Message(NAME, Strings.SERVER_FAILED_TO_CONNECT.toString()));
-                        }
-                    }).start();
-
-                } catch (IOException e) {
-                    LOGGER.printMessage(new Message("Error", Strings.SERVER_FAILED_TO_ACCEPT_CONNECTION.toString()));
-                }
-            }
-        } catch (IOException e) {
-            LOGGER.printMessage(new Message("Error", Strings.SERVER_STARTING_ER.toString()));
-        }
+    public void start(){
 
     }
 
+    public void monitorConnections(){
+        try(ServerSocket serverSocket = new ServerSocket(PORT)){
+            while (true){
+                try{
+                    Socket clientSocket = serverSocket.accept();
+                    sendMessToAll(new Message(NAME, Strings.SERVER_NEW_CONNECTION.toString()
+                            + clientSocket.getPort()));
+                    new Thread(() -> {
+                        try (PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
+                            User user = new User(clientSocket, out);
+                            users.put(clientSocket.getPort(), user);
+                            System.out.println(user);
+                            waitMessAndSend(clientSocket);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }).start();
+                } catch (IOException ex){
+                    ex.printStackTrace();
+                }
+            }
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    private void waitMessAndSend(Socket clientSocket) {
+        try (Scanner inMess = new Scanner(clientSocket.getInputStream())) {
+            while (true) {
+                if (inMess.hasNext()) {
+                    Message msg = Message.fromJSON(inMess.nextLine());
+                    if (msg.isExit()) {
+                        users.remove(clientSocket.getPort());
+                        sendMessToAll(new Message(NAME, Strings.USER_LEFT_CHAT + msg.getSender()));
+                    } else {
+                        sendMessToAll(msg);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public synchronized void sendMessToAll(Message msg) {
+        for (Map.Entry<Integer, User> entry : users.entrySet()) {
+            entry.getValue().sendMsg(msg);
+        }
+        LOGGER.printMessage(new Message(NAME, Strings.SERVER_MESSAGE_SEND_TO_ALL.toString()));
+    }
 
 }
